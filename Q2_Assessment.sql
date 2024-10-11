@@ -88,9 +88,20 @@ select e.employee_id, e.department, dense_rank() over (partition by e.department
 
 --with 
 --select e.name,e.department,sales.amount, dense_rank() over (partition by e.department order by amount desc) as TopSellingId from sales join employees e on e.employee_id=sales.employee_id;
-with select
-select e.name, e.department,sum(s.amount),
-dense_rank() over (partition by e.department order by sum(amount)) as DenseRank 
-from sales s join employees e on e.employee_id=s.employee_id  where DenseRank<=1
-group by e.department,e.name;
+--with select
+--select e.name, e.department,sum(s.amount),
+--dense_rank() over (partition by e.department order by sum(amount)) as DenseRank 
+--from sales s join employees e on e.employee_id=s.employee_id
+--group by e.department,e.name;
 
+--Question3
+select row_number() over (partition by e.department order by e.department, sum(s.amount) desc) as rankn, e.name,sum(s.amount) as total_sales from employees e join
+sales s on e.employee_id=s.employee_id group by e.employee_id,e.name,e.department;
+
+--Question4
+with ranks as (select e.name, e.department,row_number() over (partition by e.department order by e.department, sum(s.amount) desc)as rank, 
+sum(s.amount) as total, avg(p.score) as avg_per from employees e join sales s on e.employee_id=s.employee_id join performance_reviews p on p.employee_id=e.employee_id
+group by e.employee_id,e.department,e.name)
+select * from ranks where rank=1 order by total desc,department;
+
+select * from sales;
